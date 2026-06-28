@@ -1,6 +1,6 @@
 # Learner-Stage Aware AI Tutor Improves Learning Processes: Initial Evidence from a Field Experiment
 
-This repository contains sample data, code and AI tutor configuration materials for the paper "Learner-Stage Aware AI Tutor Improves Learning Processes: Initial Evidence from a Field Experiment". Accepted for publication as a long paper at Artificial Intelligence in Education (AIED) 2026. 
+This repository contains mock data, code and AI tutor configuration materials for the paper **Learner-Stage Aware AI Tutor Improves Learning Processes: Initial Evidence from a Field Experiment**. Accepted for publication as a long paper at International Conference on Artificial Intelligence in Education (AIED) 2026. 
 
 ## Folder Descriptions
 
@@ -55,6 +55,9 @@ This repository contains sample data, code and AI tutor configuration materials 
 
    Results from the mock data will **not** numerically match the published findings, but the code should run end-to-end without errors.
 
-
+## Cite the paper 
+```
+Poiaganova, M., Endres, T., Criscione, C., Wang, A.Y., Tănase, R. (2027). Learner-Stage-Aware AI Tutor Improves Learning Processes: Initial Evidence from a Field Experiment. In: Blanchard, E.G., Chen, G., Chi, M., Isotani, S. (eds) Artificial Intelligence in Education. AIED 2026. Lecture Notes in Computer Science(), vol 16584. Springer, Cham. https://doi.org/10.1007/978-3-032-29763-1_39
+```
 
 
