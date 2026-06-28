@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 
-df = pd.read_csv("replication/sample_data/chatbot_mock.csv")
+df = pd.read_csv("replication/mock_data/chatbot_mock.csv")
 
 # -----------------------------
 # Config
