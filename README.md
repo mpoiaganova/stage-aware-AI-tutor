@@ -13,8 +13,9 @@ This repository contains sample data, code and AI tutor configuration materials 
 | `replication/mock_data/survey_mock.csv` | Mock endline survey data. |
 | `replication/mock_data/chatbot_mock.csv` | Mock chatbot interaction data, including message-level annotations. |
 | :file_folder: `system prompts/` | Full texts of the meta-prompts used for the four AI tutor versions (stage-aware conditions + baseline). |
+| requirements.txt | Libraries and their versions for Python scripts. |
 
-> ❗ **Note:** All files under :file_folder: `mock_data/` are synthetic and do not contain real participant data. They are included solely to demonstrate the expected data structure and to allow the analysis and figures scripts to run for verification purposes. Real participant data is accessible upon request — please contact the authors at maria.poiaganova@business.uzh.ch
+> ❗ **Note:** All files under :file_folder: `mock_data/` are synthetic and do not contain real participant data. ❗ They are included solely to demonstrate the expected data structure and to allow the analysis and figures scripts to run for verification purposes. Real participant data is accessible upon request — please contact the authors at maria.poiaganova@business.uzh.ch
 
 ## How to Replicate
 
@@ -44,7 +45,7 @@ This repository contains sample data, code and AI tutor configuration materials 
 
    The rendered output will be saved as ```report.html``` in the same folder.
 
-4. **Generate the figures**
+3. **Generate the figures**
 ```bash
    pip install -r requirements.txt
    python replication/figures/<script_name>.py
