@@ -1,1 +1,311 @@
+---
+title: "Learner-stage-aware-AI-tutor"
+author: "Maria Poiaganova"
+date: "`r Sys.Date()`"
+output: html_document
+---
 
+```{r setup, include=FALSE}
+rm(list=ls())
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load libraries
+library(data.table)
+library(ggplot2)
+library(BayesFactor)
+library(effects)
+library(brms)
+
+# Set theme with no gridlines
+theme_set(theme_bw()+ 
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()))
+```
+
+# Read in data
+```{r read_data, include=TRUE}
+# Source helper functions
+source("functions.r")
+
+# Set data folder
+data.folder <- "../mock_data"
+
+# Participant data
+participants <- fread(file.path(data.folder, "grades_mock.csv"))
+
+# Survey data
+# ==============================================================================
+survey <- fread(file.path(data.folder, "survey_mock.csv"))
+
+# Recode mental effort
+survey$mentalEffort_1 <- sapply(survey$mentalEffort_1, RecodeAgreement)
+survey$mentalEffort_2 <- sapply(survey$mentalEffort_2, RecodeAgreement, type="reversed")
+survey$mentalEffort_3 <- sapply(survey$mentalEffort_3, RecodeAgreement, type="reversed")
+survey$mentalEffort_4 <- sapply(survey$mentalEffort_4, RecodeAgreement)
+survey[, mentalEffort := rowMeans(.SD), .SDcols = c("mentalEffort_1", "mentalEffort_2", "mentalEffort_3", "mentalEffort_4")]
+
+# Usage logs
+# ==============================================================================
+usage <- fread(file.path(data.folder, "chatbot_mock.csv"))
+setnames(usage, c("participant_id"), c("studentID"))
+
+# Keep only messages written by the students (remove tutor responses)
+usage <- usage[source=="user"]
+usage[, Doing_what:=as.character(Doing_what)]
+# Check date range for usage
+summary(as.Date(usage$time_stamp))
+
+# Recode Doing_what according to this scheme
+# “Doing_what”: { “-1”: “course unrelated”, “0”: “other course-related activity”, “1”: “self-study”, “2”: “quiz”, “3”: “analytics project” } }
+usage[Doing_what=="-1", Doing_what:="course unrelated"]
+usage[Doing_what=="0", Doing_what:="other course-related activity"]
+usage[Doing_what=="1", Doing_what:="self-study"]
+usage[Doing_what=="2", Doing_what:="quiz"]
+usage[Doing_what=="3", Doing_what:="analytics project"]
+
+# Create unique thread ID
+usage[, ThreadID:=paste(studentID, Thread, sep="|")]
+usage <- usage[order(ThreadID, time_stamp)]
+
+# Create treatment control group
+usage[, group:=ifelse(bot_type=="(C)", "control", "treatment")]
+table(usage$group, useNA="ifany")
+
+# SRL Scheme: Binarise question coding
+table(usage$SRL_scheme, useNA="ifany")
+usage[SRL_scheme=="U", is_deep:=NA]
+usage[SRL_scheme %in% c("ER", "EL", "CT", "CL"), is_deep:=1]
+usage[SRL_scheme %in% c("OG", "HS"), is_deep:=0]
+table(usage$is_deep, useNA="ifany")
+
+# When Doing_what is course unrelated, SRL scheme should be NA
+usage[Doing_what=="course unrelated", SRL_scheme:=NA]
+table(usage$Doing_what, usage$SRL_scheme, useNA="ifany")
+
+```
+
+# Descriptives
+## Participants
+```{r}
+# Number of participants
+nrow(participants)
+# Number of participants by Skill
+participants[, .N, by=Skill]
+```
+
+## Data used for each outcome
+```{r}
+# Usage logs: Nr of students
+length(unique(usage$studentID))
+# Mental effort: Nr of students
+length(unique(survey$studyID))
+# Grades
+nrow(participants[Grade!=0])
+# Nr of students
+nrow(participants)
+```
+
+# AI tutor validation
+```{r}
+# Agreement on whether to scaffold or not
+mean(usage$Scaffold_true == usage$Scaffold_true_a2, na.rm = TRUE)
+
+# Agreement on whether scaffolding occurred
+mean(usage$Scaffold_event == usage$Scaffold_event_a2, na.rm = TRUE)
+
+# Agreement on whether scaffolding was proper
+mean(usage$Scaffold_proper == usage$Scaffold_proper_a2, na.rm = TRUE)
+
+# Table 2: scaffolding event
+usage[group=="treatment", list(.N, mean(Scaffold_event == Scaffold_true)), by=bot_type]
+# Table 2: appropriate instruction
+usage[group=="treatment" & Scaffold_event==1, list(.N, mean(Scaffold_proper)), by=bot_type]
+```
+
+# RQ1
+```{r}
+# Nr of messages in the system logs
+nrow(usage)
+# Nr of students who used the tutor at least once
+length(unique(usage$studentID))
+round(length(unique(usage$studentID))/nrow(participants), 2)
+
+# Nr of students who used the tutor in at least two separate days
+nrow(usage[, length(unique(as.Date(time_stamp))), by=studentID][V1>=2])
+round(nrow(usage[, length(unique(as.Date(time_stamp))), by=studentID][V1>=2])/nrow(participants), 2)
+
+# Percentage of messages during the analytics project
+round(nrow(usage[as.Date(time_stamp) == as.Date("2025-10-22")])/nrow(usage), 2)
+
+# Frequency of Doing what
+usage[, list(.N, percentage = round(.N/nrow(usage), 2)), by=Doing_what][order(percentage, decreasing = TRUE)]
+```
+
+## Usage patterns
+```{r}
+# Aggregate usage per user
+usage.agg <- usage[, list(NMessages = .N,
+                   ActivityDays = length(unique(as.Date(time_stamp)))), 
+            by=list(studentID, group)]
+```
+
+### Messages sent
+```{r}
+# Plot
+ggplot(usage.agg, aes(x = NMessages, fill = group)) +
+  geom_histogram(position = "dodge", bins = 30) +
+  labs(title = "Distribution of Messages Sent by Bot Version", x = "Number of Messages Sent", y = "Count")
+
+# Test mean difference
+fit <- ttestBF(
+  x = usage.agg[group=="treatment"]$NMessages,
+  y = usage.agg[group=="control"]$NMessages, 
+  nullInterval = c(0, Inf)
+)
+summary(fit)
+
+usage.agg[, list(avg = round(mean(NMessages),2), sd = round(sd(NMessages),2), .N), by=group]
+```
+
+### Activity days
+```{r}
+ggplot(usage.agg, aes(x=ActivityDays, fill=group)) +
+  geom_histogram(position="dodge", bins=30) +
+  labs(title = "Distribution of Activity Days per User by Group", x = "Number of Activity Days", y = "Count")
+
+# Test difference in means using bayesian t-test
+fit <- ttestBF(
+  x = usage.agg[group=="treatment"]$ActivityDays,
+  y = usage.agg[group=="control"]$ActivityDays,
+  nullInterval = c(0, Inf)
+)
+summary(fit)
+usage.agg[, list(avg = round(mean(ActivityDays),2), sd = round(sd(ActivityDays),2), .N), by=group]
+```
+
+## Qualitative insights
+```{r}
+# Course material
+round(sum(survey$courseMaterial, na.rm=TRUE)/nrow(survey), 2)
+# Clarity
+round(sum(survey$clarity, na.rm=TRUE)/nrow(survey), 2)
+# No image
+round(sum(survey$noImage, na.rm=TRUE)/nrow(survey), 2)
+```
+
+# RQ2
+## SRL
+```{r}
+# Number of message for each classification
+(round(table(usage[Doing_what != "course unrelated"]$SRL_scheme)/nrow(usage[Doing_what != "course unrelated"]),2))
+
+# Messages that are learning related
+# Using != "course unrelated" drops entire threads that are course unrelated (thread-level label)
+# Using SRL_scheme!="U" drops messages that were coded as clarification questions
+# It is important to note that U appears only in the second message of a thread (with one exception of a one-message thread that gets dropped entirely) so that the message number will decreased by 1
+usage.learning <- usage[Doing_what != "course unrelated" & SRL_scheme!="U"]
+nrow(usage.learning)
+
+# Get message number
+usage.learning <- usage.learning[order(ThreadID, time_stamp)]
+usage.learning[, MsgNum:=1:.N, by=ThreadID]
+```
+
+## Deep vs. shallow
+```{r}
+# Percentage of deep / shallow questions
+round(table(usage.learning$is_deep)/nrow(usage.learning),2)
+
+# Proportion of deep and shallow questions by group
+usage.learning[, list(.N, mean(is_deep)), by=group]
+
+# Create wide table with depth of first and second messages
+tmp <- merge(
+  usage.learning[MsgNum==1, list(ThreadID, studentID, group, is_deep_first = is_deep)],
+  usage.learning[MsgNum==2, list(ThreadID, is_deep_second = is_deep)], 
+      all.x=TRUE, by="ThreadID")
+# If there was no second message, set to shallow
+tmp[is.na(is_deep_second), is_deep_second := FALSE]
+
+# Calculate average per learner
+tmp <- tmp[, list(avg_deep_first = mean(is_deep_first),
+                  avg_deep_second = mean(is_deep_second)), by=list(studentID, group)]
+
+# Test difference in means for first question (should be no difference)
+fit <- ttestBF(
+  x = tmp[group=="treatment"]$avg_deep_first,
+  y = tmp[group=="control"]$avg_deep_first
+)
+summary(fit)
+tmp[, list(avg = round(mean(avg_deep_first),2), sd = round(sd(avg_deep_first),2), .N), by=group]
+
+# Test difference in means for the second question
+fit <- ttestBF(
+  x = tmp[group=="treatment"]$avg_deep_second,
+  y = tmp[group=="control"]$avg_deep_second,
+  nullInterval = c(0, Inf)
+)
+summary(fit)
+
+tmp[, list(avg = round(mean(avg_deep_second),2), sd = round(sd(avg_deep_second),2), .N), by=group]
+```
+
+# Mental effort
+```{r}
+# Plot histogram by group and Skill
+ggplot(survey, aes(x = mentalEffort, fill = group)) +
+  geom_histogram(position = "dodge", bins = 10) +
+  labs(title = "Distribution of Mental Effort by Group and Skill", x = "Mental effort", y = "Count") +
+  facet_wrap(~Skill)
+```
+
+## Average difference
+```{r}
+# Test average difference
+fit <- ttestBF(
+  x = survey[group=="treatment"]$mentalEffort,
+  y = survey[group=="control"]$mentalEffort,
+  nullInterval = c(0, Inf)
+
+)
+summary(fit)
+
+survey[, list(avg = round(mean(mentalEffort),2), sd = round(sd(mentalEffort),2), .N), by=group]
+```
+
+## Intermediate + advanced group
+```{r}
+fit <- ttestBF(
+  x = survey[Skill=="IA"][group=="treatment"]$mentalEffort,
+  y = survey[Skill=="IA"][group=="control"]$mentalEffort,
+  nullInterval = c(0, Inf)
+
+)
+summary(fit)
+
+survey[Skill=="IA", list(avg = mean(mentalEffort), sd = sd(mentalEffort), .N), by=group]
+```
+
+
+## Beginner group
+```{r}
+fit <- ttestBF(
+  x = survey[Skill=="B"][group=="treatment"]$mentalEffort,
+  y = survey[Skill=="B"][group=="control"]$mentalEffort,
+  nullInterval = c(0, Inf)
+)
+summary(fit)
+```
+
+# Difference in grades
+```{r}
+# Keep only participants who participated in the analytics project
+data.grades <- participants[Grade!=0]
+
+ttestBF(
+  x = data.grades[Treatment=="T"]$Grade,
+  y = data.grades[Treatment=="C"]$Grade,
+  nullInterval = c(0, Inf)
+)
+data.grades[, list(avg = round(mean(Grade),2), sd = round(sd(Grade),2), .N), by=Treatment]
+```
