@@ -21,7 +21,7 @@ This repository contains sample data, code and AI tutor configuration materials 
 ### Requirements
 
 - **R** (with RStudio recommended) and the `rmarkdown` package.
-- **Python** 3.X or later, with: `<list Python packages used for figures>`
+- **Python** 3.9 or later, with: `<pandas==2.2.3; numpy==2.0.2; plotly==6.6.0>`
 
 ### Steps
 
