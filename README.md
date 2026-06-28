@@ -6,7 +6,6 @@ This repository contains sample data, code and AI tutor configuration materials 
 
 | Path | Contents |
 |---|---|
-| `paper.pdf` | The full paper text. |
 | :file_folder: `replication/analysis/` | R scripts to reproduce the statistical analyses reported in the paper. |
 | :file_folder: `replication/figures/` | Python scripts to reproduce the figures reported in the paper. |
 | :file_folder: `replication/mock_data/` | Mock datasets that mirror the structure of the real data. |
@@ -21,7 +20,7 @@ This repository contains sample data, code and AI tutor configuration materials 
 
 ### Requirements
 
-- **R** (with RStudio recommended) and the `rmarkdown` package, plus: `<list R packages used in the .Rmd>`
+- **R** (with RStudio recommended) and the `rmarkdown` package.
 - **Python** 3.X or later, with: `<list Python packages used for figures>`
 
 ### Steps
