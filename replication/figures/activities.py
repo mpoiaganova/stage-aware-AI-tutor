@@ -49,23 +49,23 @@ df["Activity"] = df["Doing_what"].map(label_map)
 # -----------------------------
 # Average per person (include zeros)
 # -----------------------------
-users = np.sort(df["user_Id"].dropna().unique())
+users = np.sort(df["participant_id"].dropna().unique())
 last_active_day = int(df["course_day"].max())
 all_days = np.arange(1, last_active_day + 1)
 activities = list(label_map.values())
 
 counts = (
-    df.groupby(["course_day", "user_Id", "Activity"], as_index=False)
+    df.groupby(["course_day", "participant_id", "Activity"], as_index=False)
       .size()
       .rename(columns={"size": "n_messages"})
 )
 
 grid = pd.MultiIndex.from_product(
     [all_days, users, activities],
-    names=["course_day", "user_Id", "Activity"]
+    names=["course_day", "participant_id", "Activity"]
 ).to_frame(index=False)
 
-full = grid.merge(counts, on=["course_day", "user_Id", "Activity"], how="left")
+full = grid.merge(counts, on=["course_day", "participant_id", "Activity"], how="left")
 full["n_messages"] = full["n_messages"].fillna(0)
 
 avg = (
