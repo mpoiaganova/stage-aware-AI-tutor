@@ -1,0 +1,10 @@
+﻿studyID,startDate,mentalEffort_1,mentalEffort_2,mentalEffort_3,mentalEffort_4,group,skill,courseMaterial,clarity,noImage
+a,22.10.2025 13:00,Strongly agree,Strongly disagree,Somewhat disagree,Somewhat agree,control,B,0,0,1
+b,23.10.2025 13:00,Strongly agree,Strongly disagree,Somewhat disagree,Somewhat agree,treatment,IA,1,0,0
+c,24.10.2025 13:00,Strongly agree,Strongly disagree,Somewhat disagree,Somewhat agree,treatment,B,0,0,0
+d,25.10.2025 13:00,Strongly agree,Strongly disagree,Somewhat disagree,Somewhat agree,control,B,0,0,0
+e,26.10.2025 13:00,Strongly agree,Strongly disagree,Somewhat disagree,Somewhat agree,control,IA,0,1,0
+f,27.10.2025 13:00,Strongly agree,Strongly disagree,Somewhat disagree,Somewhat agree,control,IA,0,0,1
+g,28.10.2025 13:00,Strongly agree,Strongly disagree,Somewhat disagree,Somewhat agree,control,B,1,0,0
+h,29.10.2025 13:00,Strongly agree,Strongly disagree,Somewhat disagree,Somewhat agree,control,IA,1,0,0
+i,30.10.2025 13:00,Strongly agree,Strongly disagree,Somewhat disagree,Somewhat agree,treatment,B,0,0,0
