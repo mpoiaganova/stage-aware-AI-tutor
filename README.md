@@ -42,8 +42,8 @@ This repository contains mock data, code and AI tutor configuration materials fo
 
 3. **Generate the figures**
 ```bash
-   pip install -r requirements.txt
-   python replication/figures/<script_name>.py
+   python3 -m pip install -r requirements.txt
+   python3 replication/figures/<script_name>.py
 ```
 
 4. **Check outputs**
