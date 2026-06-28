@@ -14,14 +14,15 @@ This repository contains sample data, code and AI tutor configuration materials 
 | `replication/mock_data/chatbot_mock.csv` | Mock chatbot interaction data, including message-level annotations. |
 | :file_folder: `system prompts/` | Full texts of the meta-prompts used for the four AI tutor versions (stage-aware conditions + baseline). |
 
-> **Note:** All files under :file_folder: `mock_data/` are synthetic and do not contain real participant data. They are included solely to demonstrate the expected data structure and to allow the analysis and figures scripts to run for verification purposes. Real participant data is accessible upon request — please contact the authors at maria.poiaganova@business.uzh.ch
+> ❗ **Note:** All files under :file_folder: `mock_data/` are synthetic and do not contain real participant data. They are included solely to demonstrate the expected data structure and to allow the analysis and figures scripts to run for verification purposes. Real participant data is accessible upon request — please contact the authors at maria.poiaganova@business.uzh.ch
 
 ## How to Replicate
 
 ### Requirements
 
-- **R** (with RStudio recommended) and the `rmarkdown` package.
-- **Python** 3.9 or later, with: `<pandas==2.2.3; numpy==2.0.2; plotly==6.6.0>`
+- **R** version `4.4` or later, with `data.table`, `ggplot2`, `BayesFactor`, `effects`, `brms`, `rmarkdown`, `knitr`.
+
+- **Python** version `3.9` or later, with `pandas`, `numpy`, `plotly`.
 
 ### Steps
 
@@ -33,7 +34,15 @@ This repository contains sample data, code and AI tutor configuration materials 
 
 2. **Run the analysis**
 
-   Open `replication/analysis/<filename>.Rmd` in RStudio and knit the document (or run `rmarkdown::render("replication/analysis/<filename>.Rmd")` from the R console). By default, it reads the mock datasets in `replication/mock_data/`.
+   Render the analysis report with:
+
+```bash
+   Rscript -e 'rmarkdown::render("replication/analysis/report.Rmd")
+```
+
+   Alternatively, open ```report.Rmd``` in ```RStudio``` and click ```Knit```.
+
+   The rendered output will be saved as ```report.html``` in the same folder.
 
 4. **Generate the figures**
 ```bash
@@ -43,7 +52,7 @@ This repository contains sample data, code and AI tutor configuration materials 
 
 4. **Check outputs**
 
-   Results from the mock data will not numerically match the published findings, but the code should run end-to-end without errors.
+   Results from the mock data will **not** numerically match the published findings, but the code should run end-to-end without errors.
 
 
 
