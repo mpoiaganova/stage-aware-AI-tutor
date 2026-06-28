@@ -22,6 +22,7 @@ This repository contains mock data, code and AI tutor configuration materials fo
 ### Requirements
 
 - **R** version `4.4` or later, with `data.table`, `ggplot2`, `BayesFactor`, `effects`, `brms`, `rmarkdown`, `knitr`.
+- **RStudio** version `2026.05` or later.
 
 - **Python** version `3.9` or later, with `pandas`, `numpy`, `plotly`.
 
@@ -35,13 +36,7 @@ This repository contains mock data, code and AI tutor configuration materials fo
 
 2. **Run the analysis**
 
-   Render the analysis report with:
-
-```bash
-   Rscript -e 'rmarkdown::render("replication/analysis/report.Rmd")
-```
-
-   Alternatively, open ```report.Rmd``` in ```RStudio``` and click ```Knit```.
+   In `RStudio`, open ```report.Rmd``` and click ```Knit```.
 
    The rendered output will be saved as ```report.html``` in the same folder.
 
